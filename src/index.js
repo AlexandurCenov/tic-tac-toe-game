@@ -3,18 +3,33 @@ import ReactDOM from 'react-dom';
 import './index.css';
 
 class Square extends React.Component {
+  constructor(props) {
+    /**
+     * All React component classes that have a constructor
+     * should start with a "super(props)" call
+     */
+    super(props);
+    this.state = {
+      value: null,
+    };
+  }
+
   render() {
     return (
-      <button className="square">
-        {/* TODO */}
+      <button
+        className="square"
+        onClick={() => this.setState({value: 'X'})}
+      >
+        {this.state.value}
       </button>
     );
   }
 }
 
 class Board extends React.Component {
-  renderSquare(i) {
-    return <Square />;
+  renderSquare(number) {
+    //passing props to square component
+    return <Square value={number}/>;
   }
 
   render() {
