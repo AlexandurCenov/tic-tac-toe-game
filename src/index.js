@@ -1,118 +1,123 @@
-import React from 'react';
+import React, { useState } from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
+import { calculateWinner } from "./helper";
 
-/*
- * function component
+/**
+ * Functional component Square
  */
-function Square(props) {
+function Square({ value, onClick }) {
   return (
     <button
       className="square"
-      onClick={props.onClick}
+      onClick={onClick}
     >
-      {props.value}
+      {value}
     </button>
   );
 }
 
-class Board extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      squares: Array(9).fill(null),
-      xIsNext: true,
-    };
+/**
+ * Functional component Game
+ */
+function Game() {
+  const [squares, setSquares] = useState(Array(9).fill(null));
+  const [isXNext, setIsXNext] = useState(true);
+  const nextSymbol = isXNext ? "X" : "O";
+  const winner = calculateWinner(squares);
+
+  function getStatus() {
+    if (winner) {
+      return "Winner: " + winner;
+    }
+    
+    if (isBoardFull(squares)) {
+      return "Draw!";
+    }
+
+    return "Next player: " + nextSymbol;
   }
 
-  renderSquare(squareNumber) {
-    //passing props to square component
+  function renderSquare(i) {
+    return <Square
+      value={squares[i]}
+      onClick={() => {
+        if (squares[i] != null || winner != null) {
+          return;
+        }
+        const nextSquares = squares.slice();
+        nextSquares[i] = nextSymbol;
+        setSquares(nextSquares);
+        setIsXNext(!isXNext);
+      }}
+    />;
+  }
+
+  function renderRestartButton() {
     return (
-      <Square
-        value={this.state.squares[squareNumber]}
-        onClick={() => this.handleClick(squareNumber)}  
+      <Restart
+        onClick={() => {
+          setSquares(Array(9).fill(null));
+          setIsXNext(true);
+        }}
       />
     );
   }
 
-  handleClick(squareNumber) {
-    const squares = this.state.squares.slice();
-    if (calculateWinner(squares) || squares[squareNumber]) {
-      return;
-    }
-    squares[squareNumber] = this.state.xIsNext ? 'X' : 'O';
-    this.setState({
-      squares: squares,
-      xIsNext: !this.state.xIsNext,
-    });
-  }
-
-  render() {
-    const winner = calculateWinner(this.state.squares);
-    let status;
-    if (winner) {
-      status = 'The winner is player: ' + winner;
-    } else {
-      status = 'Next player: ' + (this.state.xIsNext ? 'X' : 'O');
-    }
-
-    return (
-      <div>
-        <div className="status">{status}</div>
+  return (
+    <div className="game">
+      <div className="game-board">
         <div className="board-row">
-          {this.renderSquare(0)}
-          {this.renderSquare(1)}
-          {this.renderSquare(2)}
+          {renderSquare(0)}
+          {renderSquare(1)}
+          {renderSquare(2)}
         </div>
         <div className="board-row">
-          {this.renderSquare(3)}
-          {this.renderSquare(4)}
-          {this.renderSquare(5)}
+          {renderSquare(3)}
+          {renderSquare(4)}
+          {renderSquare(5)}
         </div>
         <div className="board-row">
-          {this.renderSquare(6)}
-          {this.renderSquare(7)}
-          {this.renderSquare(8)}
+          {renderSquare(6)}
+          {renderSquare(7)}
+          {renderSquare(8)}
         </div>
       </div>
-    );
-  }
-}
-
-class Game extends React.Component {
-  render() {
-    return (
-      <div className="game">
-        <div className="game-board">
-          <Board />
-        </div>
-        <div className="game-info">
-          <div>{/* status */}</div>
-          <ol>{/* TODO */}</ol>
+      <div className="game-info">
+        {getStatus()}
+        <div className="restart-button">
+          {renderRestartButton()}
         </div>
       </div>
-    );
-  }
+      
+    </div>
+  );
 }
 
-function calculateWinner(squares) {
-  const lines = [
-    [0, 1, 2],
-    [3, 4, 5],
-    [6, 7, 8],
-    [0, 3, 6],
-    [1, 4, 7],
-    [2, 5, 8],
-    [0, 4, 8],
-    [2, 4, 6],
-  ];
-  for (let i = 0; i < lines.length; i++) {
-    const [a, b, c] = lines[i];
-    if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-      return squares[a];
+/**
+ * Check if board is full
+ * @param {Array} squares 
+ * @returns {boolean}
+ */
+function isBoardFull(squares) {
+  for (let i = 0; i < squares.length; i++) {
+    if (squares[i] == null) {
+      return false;
     }
   }
-  return null;
+  return true;
+}
+
+/**
+ *Restart the game: set all square to null 
+ */
+function Restart({ onClick }) {
+
+  return (
+    <button className="restart" onClick={onClick}>
+      Play again
+    </button>
+  );
 }
 
 // ========================================
